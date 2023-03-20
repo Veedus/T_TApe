@@ -100,7 +100,7 @@ int main(void)
     }
 
     Logger::clear();
-    Logger::log("T_T Ape 1.1.7");
+    Logger::log("T_T Ape 1.1.8");
 
     if(!init()) {
         return -1;
@@ -118,7 +118,7 @@ int main(void)
     catch(...) {
 
     }
-    
+
     stop_thread = true;
     InputManager::stopThread = true;
     x11_thread.join();

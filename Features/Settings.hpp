@@ -33,7 +33,7 @@ private:
             save();
         }
     }
-    
+
     ~Settings() {}
 
     void internalLoad() {
@@ -49,8 +49,8 @@ private:
 
     void renderMisc() {
         if(ImGui::BeginTabItem("Misc")) {
-            
-            Renderer::renderImguiIntValue("Sleep interval ms (should recude cpu usage)", "Misc", &_sleepIntervalMs, 1, 100, 1, 5);          
+
+            Renderer::renderImguiIntValue("Sleep interval ms (should recude cpu usage)", "Misc", &_sleepIntervalMs, 0, 100, 0, 5);          
 
             if(ImGui::Button("Load##Settings")) {
                 load();
@@ -108,7 +108,7 @@ public:
         }
 
         ImGui::Begin("T_T Ape 1.1.8");
-        
+
         if (ImGui::BeginTabBar("Settings")) {
             _espSettings.render();
             _rcsSettings.render();

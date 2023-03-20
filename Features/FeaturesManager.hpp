@@ -8,12 +8,10 @@
 class FeaturesManager
 {
 private:
-
     FeaturesManager() {}
     ~FeaturesManager() {}
 
 public:
-
     static FeaturesManager& getInstance() {
         static FeaturesManager instance;
         return instance;
@@ -23,20 +21,16 @@ public:
     FeaturesManager& operator=(const FeaturesManager&) = delete;
 
     void update() {
-        if(!LocalPlayer::getInstance().isValid() || LocalPlayer::getInstance().isDead()) {
-            return;
+        if(LocalPlayer::getInstance().isValid() && !LocalPlayer::getInstance().isDead()) {
+            Glow::getInstance().update();
+            Aimbot::getInstance().update();
+            Rcs::getInstance().update();
         }
-        
-        Glow::getInstance().update();
-        Aimbot::getInstance().update();
-        Rcs::getInstance().update();
     }
 
     void render() {
-        if(!LocalPlayer::getInstance().isValid() || LocalPlayer::getInstance().isDead()) {
-            return;
+        if(LocalPlayer::getInstance().isValid() && !LocalPlayer::getInstance().isDead()) {
+            Esp::getInstance().render();
         }
-
-        Esp::getInstance().render();
     }
 };

@@ -33,11 +33,11 @@ public:
 
     PlayerManager(const PlayerManager&) = delete;
     PlayerManager& operator=(const PlayerManager&) = delete;
-    
+
     Player** begin() const {
         return _players;
     }
-    
+
     Player** end() const {
         return _players + _size;
     }
@@ -50,7 +50,7 @@ public:
 
         return _players[index];
     }
-    
+
     void update() {
         for(auto p : *this) {
             if(p != nullptr) {

@@ -30,10 +30,10 @@ private:
             !player->isValid() ||
             !player->isAlive() ||
             !player->isVisible() ||
-            !player->isInRange(settings.getRangeInMeters()) || 
+            !player->isInRange(settings.getRangeInMeters()) ||
             !player->isEnemy()
             ) {
-    
+
             return false;
         }
 
@@ -57,7 +57,7 @@ private:
                 continue;
             }
 
-            QAngle targetAngle = AimResolver::calcualteAngle(cameraPosition, targetPos);
+            QAngle targetAngle = AimResolver::calculateAngle(cameraPosition, targetPos);
             if(!targetAngle.isValid()) {
                 continue;
             }
@@ -82,7 +82,7 @@ private:
     // bool isValidTarget(Player* player, const AimbotSettings& settings) const {
 
     //     if(player == nullptr) {
-    
+
     //         return false;
     //     }
 
@@ -108,7 +108,7 @@ private:
 
     //         if(isValidTarget(currentAi, settings)) {
     //             Vector3d targetPos = currentAi->getAimBonePosition();
-    //             QAngle targetAngle = AimResolver::calcualteAngle(cameraPosition, targetPos);
+    //             QAngle targetAngle = AimResolver::calculateAngle(cameraPosition, targetPos);
     //             if(!targetAngle.isValid()) {
     //                 continue;
     //             }
@@ -147,7 +147,7 @@ public:
             currentVelocityQY = 0;
             return;
         }
-        
+
         //return aimbot aimbot should not be used
         if (!settings.isEnabled() || (!LocalPlayer::getInstance().isInAttack() && !settings.useHotkey()) || (settings.useHotkey() && !InputManager::isKeyDownOrPress(settings.getAimHotkey()))) {
             _currentTarget = nullptr;
@@ -182,7 +182,7 @@ public:
                 _currentTarget = nullptr;
                 return;
             }
-            
+
             _currentTarget = target;
             _targetSelected = true;
         }
@@ -192,13 +192,13 @@ public:
         if(targePosition.x == 0 && targePosition.y == 0 && targePosition.z == 0) {
             return;
         }
-        
+
         QAngle targetAngle = QAngle(0, 0);
         //failed to calcualte angle
         if(!getAngle(target, settings, targetAngle)) {
             return;
         }
-        
+
         LocalPlayer::getInstance().setViewAngle(targetAngle);
 
         const float randomDelay = settings.getRandomWriteDelayValue();
@@ -216,9 +216,9 @@ public:
     }
 
     bool getAngle(const Player* target, const AimbotSettings& settings, QAngle& angle) {
-        
+
         const QAngle currentAngle = LocalPlayer::getInstance().getViewAngle();
-        
+
         if(!currentAngle.isValid()) {
             return false;
         }
@@ -256,22 +256,22 @@ public:
 
         bool predictMovement = settings.predictMovementEnabled() || settings.isRage();
         bool predictBulletDrop = settings.predictBulletDropEnabled() || settings.isRage();
-        
+
         if(projectileSpeed > 1.0f) {
 
             if(predictBulletDrop && predictMovement) {
-                return AimResolver::calcualteAimRotationNew(cameraPosition, targePosition, targetVelocity, projectileSpeed, projectileDropRate, 255, angle);
+                return AimResolver::calculateAimRotationNew(cameraPosition, targePosition, targetVelocity, projectileSpeed, projectileDropRate, 255, angle);
             }
             else if (predictBulletDrop) {
-                return AimResolver::calcualteAimRotationNew(cameraPosition, targePosition, Vector3d::zero(), projectileSpeed, projectileDropRate, 255, angle);
+                return AimResolver::calculateAimRotationNew(cameraPosition, targePosition, Vector3d::zero(), projectileSpeed, projectileDropRate, 255, angle);
             }
             else if(predictMovement) {
                 return AimResolver::calculateAimRotation(cameraPosition, targePosition, targetVelocity, projectileSpeed, angle);
             }
         }
 
-        angle = AimResolver::calcualteAngle(cameraPosition, targePosition);
-        return true;   
+        angle = AimResolver::calculateAngle(cameraPosition, targePosition);
+        return true;
     }
 
     float smoothDamp(float current, float target, float& currentVelocity, float smoothTime, float maxSpeed, float deltaTime)
@@ -309,27 +309,34 @@ public:
         return angle;
     }
 
+
+    // Clamps the angle to prevent excessive angle changes
+    QAngle clampAngle(const QAngle& angle) const {
+        QAngle clampedAngle = angle;
+        clampedAngle.x = std::clamp(clampedAngle.x, -89.0f, 89.0f);
+        clampedAngle.y = std::fmod(clampedAngle.y + 180.0f, 360.0f) - 180.0f;
+        return clampedAngle;
+    }
+
+ // Smoothly changes the angle, taking into account the settings
     QAngle smoothAngleChange(const QAngle& currentAngle, const AimbotSettings& settings, const QAngle& targetAngle) {
-     
+
         const float deltaTime = TimeManager::getInstance().getDeltaTime();
         const float smoothingFactor = settings.getSpeed() * deltaTime;
 
-        QAngle angle = 
-            //smoothDampQAngle(currentAngle, targetAngle, settings.getSpeed(), 99.0f, deltaTime);
-            currentAngle.lerp(targetAngle, std::clamp(smoothingFactor, 0.0f, 1.0f)).fixAngle();
+        QAngle angle = currentAngle.lerp(targetAngle, std::clamp(smoothingFactor, 0.0f, 1.0f)).fixAngle();
 
         QAngle angleChange = angle - currentAngle;
+        angleChange = clampAngle(angleChange);
 
         const float maxAngleChange = settings.getMaxAngleChangePerTick() + randRange(-0.05, 0.05);
         if(maxAngleChange > 0.001) {
             angleChange = angleChange.clamp(-maxAngleChange, maxAngleChange);
         }
 
-        angleChange.x *= settings.getVerticalPower(); 
+        angleChange.x *= settings.getVerticalPower();
         angleChange.y *= settings.getHorizontalPower();
 
         return currentAngle + angleChange;
     }
-
 };
-

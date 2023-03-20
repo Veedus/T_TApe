@@ -6,17 +6,15 @@
 struct RcsSettings
 {
 private:
-    static const std::string enabledId;
-    static const std::string verticalPowerId;
-    static const std::string horizontalPowerId;
+    static constexpr const char* enabledId = "rcs.enabled";
+    static constexpr const char* verticalPowerId = "rcs.verticalPower";
+    static constexpr const char* horizontalPowerId = "rcs.horizontalPower";
 
-    bool _enabled;
-    float _verticalPower;
-    float _horizontalPower;
+    bool _enabled = false;
+    float _verticalPower = 0.5f;
+    float _horizontalPower = 0.5f;
 
 public:
-    RcsSettings() : _enabled(false), _verticalPower(0.5f), _horizontalPower(0.5f) {}
-
     bool isEnabled() const {
         return _enabled;
     }
@@ -30,7 +28,7 @@ public:
     }
 
     void render() {
-        if(ImGui::BeginTabItem("RCS Settings")) {
+        if (ImGui::BeginTabItem("RCS Settings")) {
 
             ImGui::Checkbox("Enabled##RCS", &_enabled);
 
@@ -42,17 +40,9 @@ public:
     }
 
     void load(const SettingsContext& settingsContext) {
-        if(!settingsContext.loadBool(enabledId, _enabled)) {
-            _enabled = true;
-        }
-
-        if(!settingsContext.loadFloat(verticalPowerId, _verticalPower)) {
-            _verticalPower = 0.5f;
-        }
-        
-        if(!settingsContext.loadFloat(horizontalPowerId, _horizontalPower)) {
-            _horizontalPower = 0.5f;
-        }
+        settingsContext.loadBool(enabledId, _enabled);
+        settingsContext.loadFloat(verticalPowerId, _verticalPower);
+        settingsContext.loadFloat(horizontalPowerId, _horizontalPower);
     }
 
     void save(SettingsContext& settingsContext) const {
@@ -61,7 +51,3 @@ public:
         settingsContext.set(horizontalPowerId, _horizontalPower);
     }
 };
-
-const std::string RcsSettings::enabledId = "rcs.enabled";
-const std::string RcsSettings::verticalPowerId = "rcs.verticalPower";
-const std::string RcsSettings::horizontalPowerId = "rcs.horizontalPower";

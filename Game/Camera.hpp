@@ -28,7 +28,7 @@ public:
         std::cout << "Size: " << screenWidth << ", " << screenHeight << std::endl;
         screenResolution = Vector2d(screenWidth, screenHeight);
     }
-    
+
     const Vector2d& getScrrenResolution() const {
         return screenResolution;
     };
@@ -41,7 +41,7 @@ public:
 
     bool worldToScreen(Vector3d worldPosition, Vector2d& screenPosition) const {
         Vector3d transformed = _viewMatrix.transform(worldPosition);
- 
+
         if (transformed.z < 0.001){
             return false;
         }

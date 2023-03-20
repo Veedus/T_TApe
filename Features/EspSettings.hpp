@@ -13,6 +13,15 @@ enum class GlowType : int {
 struct EspSettings
 {
 private:
+
+    static const std::string tracersEnabledId;
+    static const std::string tracersThicknessId;
+    static const std::string tracersColorId;
+    static const std::string tracersColorVisibleId;
+
+    static const std::string espBoxColorId;
+    static const std::string espBoxColorVisibleId;
+
     static const std::string glowEnabledId;
     static const std::string glowModeEnabledId;
     static const std::string glowTypeId;
@@ -43,6 +52,24 @@ private:
     bool _espEnabled;
     float _espRangeInMeters;
 
+    bool _espBox;
+    Color _espBoxColor;
+    Color _espBoxColorVisible;
+
+    bool _espHpShealds;
+
+
+
+    bool _drawTracers;
+    float _tracersThickness;
+    Color _tracersColor;
+    Color _tracersColorVisible;
+
+    bool _drawFov;
+    float _fovRadius;
+    Color _fovColor;
+
+
 public:
     EspSettings() :
         _glowEnabled(true),
@@ -57,10 +84,65 @@ public:
         _glowMaxHealthColor(0.0f, 1.0f, 0.0f),
         _glowMinHealthColor(1.0f, 0.0f, 0.0f),
         _espEnabled(false),
+        _espBox(true),
+        _espBoxColor(1.0f, 1.0f, 1.0f),
+        _espBoxColorVisible(0.0f, 1.0f, 0.0f),
+        _espHpShealds(true),
+        _drawTracers(false),
+        _tracersThickness(1.0f),
+        _tracersColorVisible(0.0f, 1.0f, 0.0f),
+        _tracersColor(1.0f, 1.0f, 1.0f),
+        _drawFov(false),
+        _fovColor(1.0f, 0.0f, 0.0f),
         _espRangeInMeters(100) {}
 
     bool isGlowEnabled() const {
         return _glowEnabled;
+    }
+
+    Color espBoxColor() const {
+        return _espBoxColor;
+    }
+
+    Color espBoxColorVisible() const {
+        return _espBoxColorVisible;
+    }
+
+
+    bool isEspBoxEnabled() const {
+        return _espBox;
+    }
+
+    bool isEspHpShealdsEnabled() const {
+        return _espHpShealds;
+    }
+
+    Color fovColor() const {
+        return _fovColor;
+    }
+
+    float fovRadius() const {
+        return _fovRadius;
+    }
+
+    bool drawFov() const {
+        return _drawFov;
+    }
+
+    Color tracersColorVisible() const {
+        return _tracersColorVisible;
+    }
+
+    Color tracersColor() const {
+        return _tracersColor;
+    }
+
+    bool isTracersEnabled() const {
+        return _drawTracers;
+    }
+
+    float tracersThickness() const{
+        return _tracersThickness;
     }
 
     bool isGlowModeEnabled() const {
@@ -102,7 +184,7 @@ public:
     Color getGlowMinHealthColor() const {
         return _glowMinHealthColor;
     }
-     
+
     bool isEspEnabled() const {
         return _espEnabled;
     }
@@ -113,10 +195,20 @@ public:
 
     void render() {
         if(ImGui::BeginTabItem("ESP Settings")) {
+	    ImGui::Checkbox("Tracers", &_drawTracers);
+	    if (_drawTracers) {
+	       Renderer::renderImguiColorValue("Tracers Color Visible", "ESP", _tracersColorVisible);
+         Renderer::renderImguiColorValue("Tracers Color", "ESP", _tracersColor);
 
+               ImGui::SliderFloat("Tracers Thickness", &_tracersThickness, 0.5f, 5.f, "%.2f");
+               }
+            ImGui::Checkbox("FOV Circle", &_drawFov);
+            if (_drawFov) {
+               Renderer::renderImguiColorValue("FOV Color", "ESP", _fovColor);
+            }
             ImGui::Checkbox("Glow##ESP", &_glowEnabled);
             Renderer::renderImguiFloatValue("Glow range in meters", "ESP", &_glowRangeInMeters, 25.0f, 10000.0f, 1.0f, 50.0f);
-            
+
             const char* glowTypes[] = { "Dynamic color", "Static color", "Basic" };
             int glowType = static_cast<int>(_glowType);
             ImGui::Combo("Glow type##ESP", &glowType, glowTypes, IM_ARRAYSIZE(glowTypes));
@@ -124,7 +216,7 @@ public:
 
             if(_glowType != GlowType::BasicGlow) {
                 ImGui::Checkbox("Glow mode(sets transparen level and border size)##ESP", &_glowModeEnabled);
-                
+
                 if(_glowModeEnabled) {
                     int glowTransparentLevel = _glowTransparentLevel;
                     if(Renderer::renderImguiIntValue("Glow transparent level", "ESP", &glowTransparentLevel, 1.0, 255, 1, 10)) {
@@ -149,8 +241,15 @@ public:
             }
 
             ImGui::Checkbox("Esp enabled##ESP", &_espEnabled);
+            if (_espEnabled) {
+              ImGui::Checkbox("Box##ESP", &_espBox);
+              if (_espBox) {
+                Renderer::renderImguiColorValue("Box Color Visible", "ESP", _espBoxColorVisible);
+                Renderer::renderImguiColorValue("Box Color", "ESP", _espBoxColor);
+              }
+              ImGui::Checkbox("Hp&Shields##ESP", &_espHpShealds);
+            }
             Renderer::renderImguiFloatValue("Esp range in meters", "ESP", &_espRangeInMeters, 25.0f, 500.0f, 1.0f, 25.0f);
-
             ImGui::EndTabItem();
         }
     }
@@ -159,6 +258,31 @@ public:
         if(!settingsContext.loadBool(glowEnabledId, _glowEnabled)) {
             _glowEnabled = true;
         }
+
+        if (!settingsContext.loadBool(tracersEnabledId, _drawTracers)) {
+            _drawTracers = false;
+        }
+
+        if (!settingsContext.loadFloat(tracersThicknessId, _tracersThickness)) {
+            _tracersThickness = 1.0f;
+        }
+
+        if (!settingsContext.loadVector(tracersColorId, (float*)&_tracersColor, Color::size)) {
+            _tracersColor = Color(1.0f, 1.0f, 1.0f);
+        }
+
+        if (!settingsContext.loadVector(tracersColorVisibleId, (float*)&_tracersColorVisible, Color::size)) {
+            _tracersColorVisible = Color(0., 1.0f, 0.0f);
+        }
+
+        if (!settingsContext.loadVector(espBoxColorId, (float*)&_espBoxColor, Color::size)) {
+          _espBoxColor = Color(1.0f, 1.0f, 1.0f);
+        }
+
+        if (!settingsContext.loadVector(espBoxColorVisibleId, (float*)&_espBoxColorVisible, Color::size)) {
+          _espBoxColorVisible = Color(0.0f, 1.0f, 0.0f);
+        }
+
 
         if(!settingsContext.loadBool(glowModeEnabledId, _glowModeEnabled)) {
             _glowModeEnabled = false;
@@ -214,6 +338,15 @@ public:
     }
 
     void save(SettingsContext& settingsContext) const {
+
+        settingsContext.set(tracersEnabledId, _drawTracers);
+        settingsContext.set(tracersThicknessId, _tracersThickness);
+        settingsContext.set(tracersColorId, (float*)&_tracersColor, Color::size);
+        settingsContext.set(tracersColorVisibleId, (float*)&_tracersColorVisible, Color::size);
+
+        settingsContext.set(espBoxColorId, (float*)&_espBoxColor, Color::size);
+        settingsContext.set(espBoxColorVisibleId, (float*)&_espBoxColorVisible, Color::size);
+
         settingsContext.set(glowEnabledId, _glowEnabled);
         settingsContext.set(glowModeEnabledId, _glowModeEnabled);
         settingsContext.set(glowTypeId, static_cast<int>(_glowType));
@@ -231,6 +364,14 @@ public:
     }
 };
 //glowTransparentLevelId
+const std::string EspSettings::tracersEnabledId = "esp.tracersEnabled";
+const std::string EspSettings::tracersThicknessId = "esp.tracersThickness";
+const std::string EspSettings::tracersColorId = "esp.tracersColor";
+const std::string EspSettings::tracersColorVisibleId = "esp.tracersColorVisible";
+
+const std::string EspSettings::espBoxColorId = "esp.espBoxColor";
+const std::string EspSettings::espBoxColorVisibleId = "esp.espBoxColorVisible";
+
 const std::string EspSettings::glowEnabledId = "esp.glowEnabled";
 const std::string EspSettings::glowModeEnabledId = "esp.glowModeEnabled";
 const std::string EspSettings::glowTypeId = "esp.glowType";

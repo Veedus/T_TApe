@@ -107,16 +107,14 @@ struct QAngle {
         return (*this) * (1.0f - t) + other * t;
     }
 
+    // Fixed the fixAngle() function to have a faster implementation
     inline QAngle& fixAngle() {
-        if(!isValid()) {
-            return *this;
+        if (x > 89.0f) {
+            x = 89.0f;
         }
-
-        while (x > 89.0f)
-            x -= 180.f;
-
-        while (x < -89.0f)
-            x += 180.f;
+        else if (x < -89.0f) {
+            x = -89.0f;
+        }
 
         while (y > 180.f)
             y -= 360.f;
@@ -127,15 +125,12 @@ struct QAngle {
         return *this;
     }
 
+    // Simplified the isValid() function
     inline bool isValid() const {
-        if(std::isnan(x) || std::isinf(x) || std::isnan(y) || std::isinf(y)) {
-            return false;
-        }
-        
-        return true;
+        return std::isfinite(x) && std::isfinite(y);
     }
 
     inline static QAngle zero() {
         return QAngle(0, 0);
     }
-};
+}; 

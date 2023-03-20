@@ -46,7 +46,7 @@ private:
     float _lastUpdate = 0;
 
     void enableGlow(Player* player, const EspSettings& settings) const {
-        
+
         if(settings.getGlowType() == GlowType::BasicGlow) {
             if(player->isVisible()) {
                 player->setGlowState(5, 1);
@@ -57,7 +57,7 @@ private:
         }
         else {
             player->setGlowState(1, 2);
-            
+
             if(settings.isGlowModeEnabled()) {
                 player->setGlowMode(GlowMode(HighlightFill::CustomColor, HighlightOutline::CustomColor, settings.getGlowBorder(), settings.getGlowTransparentLevel()));
             }
