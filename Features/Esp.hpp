@@ -12,6 +12,9 @@ private:
     Esp() {}
     ~Esp() {}
 
+
+
+
     bool isValidTarget(Player* player, const EspSettings& settings) const {
         if (!player || !player->isValid() || player->isDead()
             || !player->isEnemy() || !player->isInRange(settings.getEspRangeInMeters())) {

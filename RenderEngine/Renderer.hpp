@@ -1,6 +1,7 @@
 #pragma once
 
 #include <GL/gl.h>
+
 #include "../imgui/imgui.h"
 #include <algorithm>
 #include "../Math/Color.hpp"
